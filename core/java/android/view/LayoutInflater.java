@@ -699,6 +699,18 @@ public abstract class LayoutInflater {
         try {
             Trace.traceBegin(Trace.TRACE_TAG_VIEW, name);
 
+            // Keep filtered inflation on the normal class-loading path.
+            if (mFilter == null) {
+                final View directView = tryCreateViewDirect(
+                        prefix != null ? prefix + name : name, viewContext, attrs);
+                if (directView != null) {
+                    if (directView instanceof ViewStub) {
+                        ((ViewStub) directView).setLayoutInflater(cloneInContext(viewContext));
+                    }
+                    return directView;
+                }
+            }
+
             if (constructor == null) {
                 // Class not found in the cache, see if it's real, and try to add it
                 clazz = Class.forName(prefix != null ? (prefix + name) : name, false,
@@ -1243,5 +1255,106 @@ public abstract class LayoutInflater {
                 super.dispatchDraw(canvas);
             }
         }
+    }
+
+    // Some of the views included here are deprecated, but apps still use them.
+    @SuppressWarnings("deprecation")
+    private static View tryCreateViewDirect(String name, Context context, AttributeSet attributeSet) {
+        // This contains all the framework views used in a set of 113 real-world apps, sorted by
+        // number of occurrences. While views with only 1 occurrence are unlikely to be worth
+        // optimizing, it doesn't hurt to include them because switch-case is compiled into a table
+        // lookup after calling String#hashCode().
+        switch (name) {
+            case "android.widget.LinearLayout": // 13486 occurrences
+                return new android.widget.LinearLayout(context, attributeSet);
+            case "android.view.View": // 63 occurrences
+                return new android.view.View(context, attributeSet);
+            case "android.widget.FrameLayout": // 6447 occurrences
+                return new android.widget.FrameLayout(context, attributeSet);
+            case "android.view.ViewStub": // 228 occurrences
+                return new android.view.ViewStub(context, attributeSet);
+            case "android.widget.TextView": // 4722 occurrences
+                return new android.widget.TextView(context, attributeSet);
+            case "android.widget.ImageView": // 3044 occurrences
+                return new android.widget.ImageView(context, attributeSet);
+            case "android.widget.RelativeLayout": // 2665 occurrences
+                return new android.widget.RelativeLayout(context, attributeSet);
+            case "android.widget.Space": // 1694 occurrences
+                return new android.widget.Space(context, attributeSet);
+            case "android.widget.ProgressBar": // 770 occurrences
+                return new android.widget.ProgressBar(context, attributeSet);
+            case "android.widget.Button": // 382 occurrences
+                return new android.widget.Button(context, attributeSet);
+            case "android.widget.ImageButton": // 265 occurrences
+                return new android.widget.ImageButton(context, attributeSet);
+            case "android.widget.Switch": // 145 occurrences
+                return new android.widget.Switch(context, attributeSet);
+            case "android.widget.DateTimeView": // 117 occurrences
+                return new android.widget.DateTimeView(context, attributeSet);
+            case "android.widget.Toolbar": // 86 occurrences
+                return new android.widget.Toolbar(context, attributeSet);
+            case "android.widget.HorizontalScrollView": // 68 occurrences
+                return new android.widget.HorizontalScrollView(context, attributeSet);
+            case "android.widget.ScrollView": // 67 occurrences
+                return new android.widget.ScrollView(context, attributeSet);
+            case "android.view.NotificationHeaderView": // 65 occurrences
+                return new android.view.NotificationHeaderView(context, attributeSet);
+            case "android.widget.ListView": // 58 occurrences
+                return new android.widget.ListView(context, attributeSet);
+            case "android.widget.QuickContactBadge": // 50 occurrences
+                return new android.widget.QuickContactBadge(context, attributeSet);
+            case "android.widget.SeekBar": // 40 occurrences
+                return new android.widget.SeekBar(context, attributeSet);
+            case "android.widget.CheckBox": // 38 occurrences
+                return new android.widget.CheckBox(context, attributeSet);
+            case "android.widget.GridLayout": // 16 occurrences
+                return new android.widget.GridLayout(context, attributeSet);
+            case "android.widget.TableRow": // 15 occurrences
+                return new android.widget.TableRow(context, attributeSet);
+            case "android.widget.RadioGroup": // 15 occurrences
+                return new android.widget.RadioGroup(context, attributeSet);
+            case "android.widget.Chronometer": // 15 occurrences
+                return new android.widget.Chronometer(context, attributeSet);
+            case "android.widget.ViewFlipper": // 13 occurrences
+                return new android.widget.ViewFlipper(context, attributeSet);
+            case "android.widget.Spinner": // 9 occurrences
+                return new android.widget.Spinner(context, attributeSet);
+            case "android.widget.ViewSwitcher": // 8 occurrences
+                return new android.widget.ViewSwitcher(context, attributeSet);
+            case "android.widget.TextSwitcher": // 8 occurrences
+                return new android.widget.TextSwitcher(context, attributeSet);
+            case "android.view.SurfaceView": // 1 occurrence
+                return new android.view.SurfaceView(context, attributeSet);
+            case "android.widget.CheckedTextView": // 8 occurrences
+                return new android.widget.CheckedTextView(context, attributeSet);
+            case "android.preference.PreferenceFrameLayout": // 8 occurrences
+                return new android.preference.PreferenceFrameLayout(context, attributeSet);
+            case "android.widget.TwoLineListItem": // 7 occurrences
+                return new android.widget.TwoLineListItem(context, attributeSet);
+            case "android.widget.TableLayout": // 5 occurrences
+                return new android.widget.TableLayout(context, attributeSet);
+            case "android.widget.EditText": // 5 occurrences
+                return new android.widget.EditText(context, attributeSet);
+            case "android.widget.TabWidget": // 3 occurrences
+                return new android.widget.TabWidget(context, attributeSet);
+            case "android.widget.TabHost": // 3 occurrences
+                return new android.widget.TabHost(context, attributeSet);
+            case "android.widget.ZoomButton": // 2 occurrences
+                return new android.widget.ZoomButton(context, attributeSet);
+            case "android.view.TextureView": // 2 occurrences
+                return new android.view.TextureView(context, attributeSet);
+            case "android.widget.ExpandableListView": // 2 occurrences
+                return new android.widget.ExpandableListView(context, attributeSet);
+            case "android.widget.ViewAnimator": // 1 occurrence
+                return new android.widget.ViewAnimator(context, attributeSet);
+            case "android.widget.TextClock": // 1 occurrence
+                return new android.widget.TextClock(context, attributeSet);
+            case "android.widget.AutoCompleteTextView": // 1 occurrence
+                return new android.widget.AutoCompleteTextView(context, attributeSet);
+            case "android.webkit.WebView": // 1 occurrence
+                return new android.webkit.WebView(context, attributeSet);
+        }
+
+        return null;
     }
 }
