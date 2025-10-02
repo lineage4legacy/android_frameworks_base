@@ -1251,6 +1251,7 @@ public final class ViewRootImpl implements ViewParent,
     private final boolean mDisableDrawWakeLock;
 
     private String mTag = TAG;
+    private String mDrawTrace = "draw-" + mTag; // cache to avoid allocating on each frame
     private String mFpsTraceName;
     private String mLargestViewTraceName;
 
@@ -1881,6 +1882,7 @@ public final class ViewRootImpl implements ViewParent,
         final String[] split = mWindowAttributes.getTitle().toString().split("\\.");
         if (split.length > 0) {
             mTag =  "VRI[" + split[split.length - 1] + "]";
+            mDrawTrace = "draw-" + mTag;
         }
     }
 
@@ -5568,7 +5570,7 @@ public final class ViewRootImpl implements ViewParent,
         mFullRedrawNeeded = false;
 
         mIsDrawing = true;
-        Trace.traceBegin(Trace.TRACE_TAG_VIEW, "draw-" + mTag);
+        Trace.traceBegin(Trace.TRACE_TAG_VIEW, mDrawTrace);
 
         addFrameCommitCallbackIfNeeded();
 
@@ -5659,8 +5661,10 @@ public final class ViewRootImpl implements ViewParent,
             }
             surfaceSyncGroup.markSyncReady();
         } else if (hasPendingTransaction && pendingTransaction != null) {
-            Trace.instant(Trace.TRACE_TAG_VIEW,
-                    "Transaction not synced due to " + logReason + "-" + mTag);
+            if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                Trace.instant(Trace.TRACE_TAG_VIEW,
+                        "Transaction not synced due to " + logReason + "-" + mTag);
+            }
             if (DEBUG_BLAST) {
                 Log.d(mTag, "Pending transaction will not be applied in sync with a draw due to "
                         + logReason);
@@ -12848,7 +12852,9 @@ public final class ViewRootImpl implements ViewParent,
             logAndTrace("applyTransactionOnDraw applyImmediately");
             t.apply();
         } else {
-            Trace.instant(Trace.TRACE_TAG_VIEW, "applyTransactionOnDraw-" + mTag);
+            if (Trace.isTagEnabled(TRACE_TAG_VIEW)) {
+                Trace.instant(Trace.TRACE_TAG_VIEW, "applyTransactionOnDraw-" + mTag);
+            }
             // Copy and clear the passed in transaction for thread safety. The new transaction is
             // accessed on the render thread.
             mPendingTransaction.merge(t);
@@ -13199,8 +13205,10 @@ public final class ViewRootImpl implements ViewParent,
             });
         }
 
-        Trace.instant(Trace.TRACE_TAG_VIEW,
-                "getOrCreateSurfaceSyncGroup isNew=" + newSyncGroup + " " + mTag);
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+            Trace.instant(Trace.TRACE_TAG_VIEW,
+                    "getOrCreateSurfaceSyncGroup isNew=" + newSyncGroup + " " + mTag);
+        }
 
         if (DEBUG_BLAST) {
             if (newSyncGroup) {
