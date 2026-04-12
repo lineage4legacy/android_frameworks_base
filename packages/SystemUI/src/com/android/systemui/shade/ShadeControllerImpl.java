@@ -17,6 +17,7 @@
 package com.android.systemui.shade;
 
 import android.content.ComponentCallbacks2;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -68,6 +69,10 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
     private final Lazy<NotificationPanelViewController> mNpvc;
     private final Lazy<AssistManager> mAssistManagerLazy;
     private final Lazy<NotificationGutsManager> mGutsManager;
+
+    private static final long TRIM_MEMORY_DELAY_MS = 500;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mTrimMemoryRunnable = this::performDeferredTrimMemory;
 
     private boolean mExpandedVisible;
     private boolean mLockscreenOrShadeVisible;
@@ -287,6 +292,7 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
         }
 
         mExpandedVisible = true;
+        mHandler.removeCallbacks(mTrimMemoryRunnable);
 
         // Expand the window to encompass the full screen in anticipation of the drag.
         // It's only possible to do atomically because the status bar is at the top of the screen!
@@ -333,8 +339,14 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
 
         // Trimming will happen later if Keyguard is showing - doing it here might cause a jank in
         // the bouncer appear animation.
-        if (!mKeyguardStateController.isShowing()) {
-            WindowManagerGlobal.getInstance().trimMemory(ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN);
+        mHandler.removeCallbacks(mTrimMemoryRunnable);
+        mHandler.postDelayed(mTrimMemoryRunnable, TRIM_MEMORY_DELAY_MS);
+    }
+
+    private void performDeferredTrimMemory() {
+        if (!mExpandedVisible && !mKeyguardStateController.isShowing()) {
+            WindowManagerGlobal.getInstance().trimMemory(
+                    ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN);
         }
     }
 
