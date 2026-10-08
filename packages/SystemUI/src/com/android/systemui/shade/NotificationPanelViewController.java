@@ -247,11 +247,6 @@ public final class NotificationPanelViewController implements
     private static final long SHADE_OPEN_SPRING_BACK_DURATION = 400L;
 
     /**
-     * The factor of the usual high velocity that is needed in order to reach the maximum overshoot
-     * when flinging. A low value will make it that most flings will reach the maximum overshoot.
-     */
-    private static final float FACTOR_OF_HIGH_VELOCITY_FOR_MAX_OVERSHOOT = 0.5f;
-    /**
      * Maximum time before which we will expand the panel even for slow motions when getting a
      * touch passed over from launcher.
      */
@@ -1437,24 +1432,8 @@ public final class NotificationPanelViewController implements
             return;
         }
         mIsFlinging = true;
-        // we want to perform an overshoot animation when flinging open
-        final boolean addOverscroll =
-                expand
-                        && mStatusBarStateController.getState() != KEYGUARD
-                        && mOverExpansion == 0.0f
-                        && vel >= 0;
-        final boolean shouldSpringBack = addOverscroll || (mOverExpansion != 0.0f && expand);
-        float overshootAmount = 0.0f;
-        if (addOverscroll) {
-            // Let's overshoot depending on the amount of velocity
-            overshootAmount = MathUtils.lerp(
-                    0.2f,
-                    1.0f,
-                    MathUtils.saturate(vel
-                            / (this.mFlingAnimationUtils.getHighVelocityPxPerSecond()
-                            * FACTOR_OF_HIGH_VELOCITY_FOR_MAX_OVERSHOOT)));
-            overshootAmount += mOverExpansion / mPanelFlingOvershootAmount;
-        }
+        final boolean shouldSpringBack = mOverExpansion != 0.0f && expand;
+        final float overshootAmount = 0.0f;
         ValueAnimator animator = createHeightAnimator(target, overshootAmount);
         if (expand) {
             maybeVibrateOnOpening(true /* openingWithTouch */);
@@ -2104,6 +2083,7 @@ public final class NotificationPanelViewController implements
 
     @VisibleForTesting
     void setOverExpansion(float overExpansion) {
+        overExpansion = 0.0f;
         if (overExpansion == mOverExpansion) {
             return;
         }
