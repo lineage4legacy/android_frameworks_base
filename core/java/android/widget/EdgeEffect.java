@@ -245,8 +245,7 @@ public class EdgeEffect {
                 attrs, com.android.internal.R.styleable.EdgeEffect);
         final int themeColor = a.getColor(
                 com.android.internal.R.styleable.EdgeEffect_colorEdgeEffect, 0xff666666);
-        mEdgeEffectType = Compatibility.isChangeEnabled(USE_STRETCH_EDGE_EFFECT_BY_DEFAULT)
-                ? TYPE_STRETCH : TYPE_GLOW;
+        mEdgeEffectType = TYPE_NONE;
         a.recycle();
 
         mPaint.setAntiAlias(true);
