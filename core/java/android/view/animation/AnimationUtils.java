@@ -229,6 +229,7 @@ public class AnimationUtils {
             throws NotFoundException {
 
         if (ActivityAnimations.sPerfAnimEnabled) {
+            ActivityAnimations.preload(context);
             switch (id) {
                 case R.anim.activity_open_enter:
                     return ActivityAnimations.getOpenEnter(context);
@@ -541,7 +542,10 @@ public class AnimationUtils {
         private ActivityAnimations() {}
 
         /** @hide */
-        public static void preload(Context context) {
+        public static synchronized void preload(Context context) {
+            if (sCloseExit != null) {
+                return;
+            }
             sSpatialSpec = new SpringInterpolator(0.8f, 380f);
             sEffectsSpec = new SpringInterpolator(1.0f, 3800f);
             sOpenEnter = new ActivityAnimFactory()
