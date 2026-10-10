@@ -290,19 +290,19 @@ private fun TrackBackground(
         )
 
         val indicatorCornerRadius = CornerRadius(indicatorRadiusDp.toPx(), indicatorRadiusDp.toPx())
-            val indicatorPath = Path()
-            indicatorPath.addRoundRect(
-                RoundRect(
-                    left = drawingState.indicatorLeft,
-                    top = drawingState.indicatorTop,
-                    right = drawingState.indicatorRight,
-                    bottom = drawingState.indicatorBottom,
-                    topLeftCornerRadius = trackCornerRadius,
-                    topRightCornerRadius = indicatorCornerRadius,
-                    bottomRightCornerRadius = indicatorCornerRadius,
-                    bottomLeftCornerRadius = trackCornerRadius,
-                )
+        val indicatorPath = Path()
+        indicatorPath.addRoundRect(
+            RoundRect(
+                left = drawingState.indicatorLeft,
+                top = drawingState.indicatorTop,
+                right = drawingState.indicatorRight,
+                bottom = drawingState.indicatorBottom,
+                topLeftCornerRadius = trackCornerRadius,
+                topRightCornerRadius = indicatorCornerRadius,
+                bottomRightCornerRadius = indicatorCornerRadius,
+                bottomLeftCornerRadius = trackCornerRadius,
             )
+        )
         onDrawBehind {
             drawPath(path = trackPath, color = trackColor)
             clipPath(trackPath) {
