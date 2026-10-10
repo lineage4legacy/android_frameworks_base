@@ -21,7 +21,6 @@ package com.android.compose
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -48,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
@@ -276,7 +276,7 @@ private fun TrackBackground(
             colors.getIndicatorColor(enabled),
             label = "PlatformSliderIndicatorColorAnimation",
         )
-    Canvas(modifier.fillMaxSize()) {
+    Spacer(modifier.fillMaxSize().drawWithCache {
         val trackCornerRadius = CornerRadius(size.height / 2, size.height / 2)
         val trackPath = Path()
         trackPath.addRoundRect(
@@ -288,10 +288,8 @@ private fun TrackBackground(
                 cornerRadius = trackCornerRadius,
             )
         )
-        drawPath(path = trackPath, color = trackColor)
 
         val indicatorCornerRadius = CornerRadius(indicatorRadiusDp.toPx(), indicatorRadiusDp.toPx())
-        clipPath(trackPath) {
             val indicatorPath = Path()
             indicatorPath.addRoundRect(
                 RoundRect(
@@ -305,9 +303,13 @@ private fun TrackBackground(
                     bottomLeftCornerRadius = trackCornerRadius,
                 )
             )
-            drawPath(path = indicatorPath, color = indicatorColor)
+        onDrawBehind {
+            drawPath(path = trackPath, color = trackColor)
+            clipPath(trackPath) {
+                drawPath(path = indicatorPath, color = indicatorColor)
+            }
         }
-    }
+    })
 }
 
 /** Measures track components sizes and calls [onDrawingStateMeasured] when it's done. */
