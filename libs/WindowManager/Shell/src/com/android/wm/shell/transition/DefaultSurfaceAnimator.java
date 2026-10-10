@@ -111,6 +111,8 @@ public class DefaultSurfaceAnimator {
         float mPrevAlpha = Float.NaN;
         final Rect mPrevAnimClipRect = new Rect();
         boolean mCornerRadiusApplied = false;
+        boolean mMatrixApplied = false;
+        boolean mCropApplied = false;
         @NonNull final Animation mAnim;
         @Nullable final Point mPosition;
         @Nullable final Rect mClipRect;
@@ -149,9 +151,10 @@ public class DefaultSurfaceAnimator {
                 transformation.getMatrix().postTranslate(mPosition.x, mPosition.y);
             }
             transformation.getMatrix().getValues(mMatrix);
-            if (!Arrays.equals(mMatrix, mPrevMatrix)) {
+            if (!mMatrixApplied || !Arrays.equals(mMatrix, mPrevMatrix)) {
                 t.setMatrix(leash, transformation.getMatrix(), mMatrix);
                 System.arraycopy(mMatrix, 0, mPrevMatrix, 0, 9);
+                mMatrixApplied = true;
             }
             final float alpha = transformation.getAlpha();
             if (alpha != mPrevAlpha) {
@@ -185,9 +188,10 @@ public class DefaultSurfaceAnimator {
                     }
                     needCrop = true;
                 }
-                if (needCrop && !mAnimClipRect.equals(mPrevAnimClipRect)) {
+                if (needCrop && (!mCropApplied || !mAnimClipRect.equals(mPrevAnimClipRect))) {
                     t.setWindowCrop(leash, mAnimClipRect);
                     mPrevAnimClipRect.set(mAnimClipRect);
+                    mCropApplied = true;
                 }
             }
         }
