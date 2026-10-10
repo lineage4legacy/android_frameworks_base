@@ -394,7 +394,7 @@ constructor(
             }
 
             override fun onTimeChanged() {
-                refreshTime()
+                if (isPreview || isKeyguardVisible) refreshTime()
             }
 
             private fun refreshTime() {
