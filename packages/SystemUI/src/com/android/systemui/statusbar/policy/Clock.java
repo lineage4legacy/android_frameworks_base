@@ -313,6 +313,10 @@ public class Clock extends TextView implements
         }
 
         super.setVisibility(visibility);
+        if (mAttached) {
+            updateShowSeconds();
+            if (visibility == View.VISIBLE) updateClock();
+        }
     }
 
     private void setClockVisibleByUser(boolean visible) {
@@ -338,11 +342,11 @@ public class Clock extends TextView implements
 
         boolean visible = shouldBeVisible();
         int visibility = visible ? View.VISIBLE : View.GONE;
-        super.setVisibility(visibility);
+        setVisibility(visibility);
     }
 
     final void updateClock(boolean forceTextUpdate) {
-        if (mDemoMode || mCalendar == null) return;
+        if (mDemoMode || mCalendar == null || getVisibility() != View.VISIBLE) return;
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         CharSequence smallTime = getSmallTime();
         // Setting text actually triggers a layout pass (because the text view is set to
@@ -443,7 +447,7 @@ public class Clock extends TextView implements
     }
 
     private void updateShowSeconds() {
-        if (mShowSeconds) {
+        if (mShowSeconds && mAttached && getVisibility() == View.VISIBLE) {
             // Wait until we have a display to start trying to show seconds.
             if (mSecondsHandler == null && getDisplay() != null) {
                 mSecondsHandler = new Handler();
