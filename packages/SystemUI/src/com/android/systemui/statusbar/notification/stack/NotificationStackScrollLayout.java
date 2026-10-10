@@ -167,6 +167,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A layout which handles a dynamic amount of notifications and presents them in a scrollable stack.
@@ -241,7 +242,7 @@ public class NotificationStackScrollLayout
     int mImeInset = 0;
     private float mQsExpansionFraction;
     private final int mSplitShadeMinContentHeight;
-    private String mLastUpdateSidePaddingDumpString;
+    private Supplier<String> mLastUpdateSidePaddingDumpString = () -> "not measured";
     private long mLastUpdateSidePaddingElapsedRealtime;
     private String mLastInitViewDumpString;
     private long mLastInitViewElapsedRealtime;
@@ -1014,8 +1015,9 @@ public class NotificationStackScrollLayout
     void updateSidePadding(int viewWidth) {
         final int orientation = getResources().getConfiguration().orientation;
 
-        mLastUpdateSidePaddingDumpString = "viewWidth=" + viewWidth
-                + " skinnyNotifsInLandscape=" + mSkinnyNotifsInLandscape
+        final boolean skinnyNotifsInLandscape = mSkinnyNotifsInLandscape;
+        mLastUpdateSidePaddingDumpString = () -> "viewWidth=" + viewWidth
+                + " skinnyNotifsInLandscape=" + skinnyNotifsInLandscape
                 + " orientation=" + orientation;
         mLastUpdateSidePaddingElapsedRealtime = SystemClock.elapsedRealtime();
 
@@ -5955,7 +5957,7 @@ public class NotificationStackScrollLayout
             println(pw, "lastInitViewElapsedRealtime", mLastInitViewElapsedRealtime);
             println(pw, "lastInitViewMillisAgo", elapsedRealtime - mLastInitViewElapsedRealtime);
             println(pw, "shouldUseSplitNotificationShade", mShouldUseSplitNotificationShade);
-            println(pw, "lastUpdateSidePadding", mLastUpdateSidePaddingDumpString);
+            println(pw, "lastUpdateSidePadding", mLastUpdateSidePaddingDumpString.get());
             println(pw, "lastUpdateSidePaddingElapsedRealtime",
                     mLastUpdateSidePaddingElapsedRealtime);
             println(pw, "lastUpdateSidePaddingMillisAgo",
