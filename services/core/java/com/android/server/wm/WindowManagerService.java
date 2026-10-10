@@ -446,8 +446,8 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Indicates we are removing the focused window when updating the focus. */
     static final int UPDATE_FOCUS_REMOVING_FOCUS = 4;
 
-    private static final String SYSTEM_SECURE = "ro.secure";
-    private static final String SYSTEM_DEBUGGABLE = "ro.debuggable";
+    private static final boolean SYSTEM_SECURE = SystemProperties.getBoolean("ro.secure", true);
+    private static final boolean SYSTEM_DEBUGGABLE = SystemProperties.getBoolean("ro.debuggable", false);
 
     private static final String DENSITY_OVERRIDE = "ro.config.density_override";
     private static final String SIZE_OVERRIDE = "ro.config.size_override";
@@ -1051,7 +1051,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         void updateDisableSecureWindows() {
-            if (!SystemProperties.getBoolean(SYSTEM_DEBUGGABLE, false)) {
+            if (!SYSTEM_DEBUGGABLE) {
                 return;
             }
 
@@ -5466,8 +5466,7 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     private boolean isSystemSecure() {
-        return "1".equals(SystemProperties.get(SYSTEM_SECURE, "1")) &&
-                "0".equals(SystemProperties.get(SYSTEM_DEBUGGABLE, "0"));
+        return SYSTEM_SECURE && !SYSTEM_DEBUGGABLE;
     }
 
     /**
