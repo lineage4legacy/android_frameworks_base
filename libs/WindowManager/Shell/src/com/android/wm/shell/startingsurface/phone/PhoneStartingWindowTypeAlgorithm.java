@@ -33,6 +33,7 @@ import static android.window.StartingWindowInfo.TYPE_PARAMETER_TASK_SWITCH;
 import static android.window.StartingWindowInfo.TYPE_PARAMETER_USE_SOLID_COLOR_SPLASH_SCREEN;
 import static android.window.StartingWindowInfo.TYPE_PARAMETER_WINDOWLESS;
 
+import android.os.SystemProperties;
 import android.window.StartingWindowInfo;
 
 import com.android.internal.protolog.ProtoLog;
@@ -91,7 +92,7 @@ public class PhoneStartingWindowTypeAlgorithm implements StartingWindowTypeAlgor
                     return STARTING_WINDOW_TYPE_SNAPSHOT;
                 }
                 if (!topIsHome) {
-                    return STARTING_WINDOW_TYPE_SOLID_COLOR_SPLASH_SCREEN;
+                    return getSplashscreenType(true, false);
                 }
             }
             if (!activityDrawn && !topIsHome) {
@@ -103,6 +104,9 @@ public class PhoneStartingWindowTypeAlgorithm implements StartingWindowTypeAlgor
 
     private static int getSplashscreenType(boolean solidColorSplashScreen,
             boolean legacySplashScreen) {
+        if (!SystemProperties.getBoolean("persist.sys.app.splash_enable", true)) {
+            return STARTING_WINDOW_TYPE_LEGACY_SPLASH_SCREEN;
+        }
         return solidColorSplashScreen
                 ? STARTING_WINDOW_TYPE_SOLID_COLOR_SPLASH_SCREEN
                 : legacySplashScreen
