@@ -71,8 +71,12 @@ public class ViewState implements Dumpable {
         if (prev != null) {
             sLayerHandler.removeCallbacks(prev);
         }
-        sPendingLayerChanges.put(view, action);
-        sLayerHandler.postDelayed(action, LAYER_DEBOUNCE_MS);
+        Runnable pending = () -> {
+            sPendingLayerChanges.remove(view);
+            action.run();
+        };
+        sPendingLayerChanges.put(view, pending);
+        sLayerHandler.postDelayed(pending, LAYER_DEBOUNCE_MS);
     }
 
     public ViewState() {
