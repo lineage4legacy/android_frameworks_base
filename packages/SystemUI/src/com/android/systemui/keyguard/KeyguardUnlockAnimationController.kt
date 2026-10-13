@@ -20,6 +20,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.WallpaperManager
+import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.content.res.Resources
 import android.graphics.Matrix
 import android.graphics.Rect
@@ -655,6 +656,14 @@ constructor(
                 }
 
                 launcherPreparedForUnlock = false
+            } else if (
+                keyguardStateController.isDismissingFromSwipe &&
+                    keyguardStateController.dismissAmount >= DISMISS_AMOUNT_EXIT_KEYGUARD_THRESHOLD &&
+                    ActivityManagerWrapper.getInstance().runningTask?.topActivityType ==
+                        ACTIVITY_TYPE_HOME
+            ) {
+                // Finish a completed home swipe with the window animation when Launcher cannot.
+                playCannedUnlockAnimation()
             } else {
                 // Otherwise, we're swiping in an app and should just fade it in. The swipe gesture
                 // will translate it until the end of the swipe gesture.
