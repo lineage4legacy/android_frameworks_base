@@ -18,6 +18,7 @@ package com.android.systemui.qs.panels.ui.compose.infinitegrid
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.approachLayout
+import com.android.systemui.qs.shared.QsLiteMode
 import kotlin.math.roundToInt
 
 /**
@@ -33,6 +34,8 @@ import kotlin.math.roundToInt
  * also use an approachLayout tracking the squishiness.
  */
 fun Modifier.verticalSquish(squishiness: () -> Float): Modifier {
+    if (QsLiteMode.isEnabled()) return this
+
     return approachLayout(
         isMeasurementApproachInProgress = { squishiness() < 1 },
         approachMeasure = { measurable, constraints ->

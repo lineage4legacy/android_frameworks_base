@@ -34,6 +34,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.ColorUtils;
+import com.android.systemui.qs.shared.QsLiteMode;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 
 /**
@@ -46,6 +47,10 @@ public class ScrimDrawable extends Drawable {
     private final Paint mPaint;
     private final Path mPath = new Path();
     private final RectF mBoundsRectF = new RectF();
+    private final RectF mCachedRoundedBounds = new RectF();
+    private float mCachedTopRadius;
+    private float mCachedBottomRadius;
+    private boolean mRoundedPathValid;
 
     private int mAlpha = 255;
     private int mMainColor;
@@ -236,24 +241,34 @@ public class ScrimDrawable extends Drawable {
             // anything (drawing a rounded box with these specifications is not possible).
             // TODO(b/271030611) perhaps this could be accomplished via Path.addRoundRect instead?
             if (mBoundsRectF.bottom - mBoundsRectF.top > bottomEdgeRadius) {
-                mPath.reset();
-                mPath.moveTo(mBoundsRectF.right, mBoundsRectF.top + topEdgeRadius);
-                mPath.cubicTo(mBoundsRectF.right, mBoundsRectF.top + topEdgeRadius,
-                        mBoundsRectF.right, mBoundsRectF.top,
-                        mBoundsRectF.right - topEdgeRadius, mBoundsRectF.top);
-                mPath.lineTo(mBoundsRectF.left + topEdgeRadius, mBoundsRectF.top);
-                mPath.cubicTo(mBoundsRectF.left + topEdgeRadius, mBoundsRectF.top,
-                        mBoundsRectF.left, mBoundsRectF.top,
-                        mBoundsRectF.left, mBoundsRectF.top + topEdgeRadius);
-                mPath.lineTo(mBoundsRectF.left, mBoundsRectF.bottom - bottomEdgeRadius);
-                mPath.cubicTo(mBoundsRectF.left, mBoundsRectF.bottom - bottomEdgeRadius,
-                        mBoundsRectF.left, mBoundsRectF.bottom,
-                        mBoundsRectF.left + bottomEdgeRadius, mBoundsRectF.bottom);
-                mPath.lineTo(mBoundsRectF.right - bottomEdgeRadius, mBoundsRectF.bottom);
-                mPath.cubicTo(mBoundsRectF.right - bottomEdgeRadius, mBoundsRectF.bottom,
-                        mBoundsRectF.right, mBoundsRectF.bottom,
-                        mBoundsRectF.right, mBoundsRectF.bottom - bottomEdgeRadius);
-                mPath.close();
+                // Color and alpha changes do not change the rounded geometry.
+                if (!QsLiteMode.isEnabled() || !mRoundedPathValid
+                        || !mCachedRoundedBounds.equals(mBoundsRectF)
+                        || mCachedTopRadius != topEdgeRadius
+                        || mCachedBottomRadius != bottomEdgeRadius) {
+                    mPath.reset();
+                    mPath.moveTo(mBoundsRectF.right, mBoundsRectF.top + topEdgeRadius);
+                    mPath.cubicTo(mBoundsRectF.right, mBoundsRectF.top + topEdgeRadius,
+                            mBoundsRectF.right, mBoundsRectF.top,
+                            mBoundsRectF.right - topEdgeRadius, mBoundsRectF.top);
+                    mPath.lineTo(mBoundsRectF.left + topEdgeRadius, mBoundsRectF.top);
+                    mPath.cubicTo(mBoundsRectF.left + topEdgeRadius, mBoundsRectF.top,
+                            mBoundsRectF.left, mBoundsRectF.top,
+                            mBoundsRectF.left, mBoundsRectF.top + topEdgeRadius);
+                    mPath.lineTo(mBoundsRectF.left, mBoundsRectF.bottom - bottomEdgeRadius);
+                    mPath.cubicTo(mBoundsRectF.left, mBoundsRectF.bottom - bottomEdgeRadius,
+                            mBoundsRectF.left, mBoundsRectF.bottom,
+                            mBoundsRectF.left + bottomEdgeRadius, mBoundsRectF.bottom);
+                    mPath.lineTo(mBoundsRectF.right - bottomEdgeRadius, mBoundsRectF.bottom);
+                    mPath.cubicTo(mBoundsRectF.right - bottomEdgeRadius, mBoundsRectF.bottom,
+                            mBoundsRectF.right, mBoundsRectF.bottom,
+                            mBoundsRectF.right, mBoundsRectF.bottom - bottomEdgeRadius);
+                    mPath.close();
+                    mCachedRoundedBounds.set(mBoundsRectF);
+                    mCachedTopRadius = topEdgeRadius;
+                    mCachedBottomRadius = bottomEdgeRadius;
+                    mRoundedPathValid = true;
+                }
                 canvas.drawPath(mPath, mPaint);
             }
         } else {

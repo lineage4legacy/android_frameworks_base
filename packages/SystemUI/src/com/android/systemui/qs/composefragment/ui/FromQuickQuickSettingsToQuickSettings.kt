@@ -18,6 +18,7 @@ package com.android.systemui.qs.composefragment.ui
 
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.qs.composefragment.SceneKeys
+import com.android.systemui.qs.shared.QsLiteMode
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 
 fun TransitionBuilder.quickQuickSettingsToQuickSettings(
@@ -30,7 +31,10 @@ fun TransitionBuilder.quickQuickSettingsToQuickSettings(
 
     anchoredTranslate(Elements.QuickSettingsContent, Elements.GridAnchor)
 
-    sharedElement(Elements.TileElementMatcher, enabled = animateTilesExpansion())
+    sharedElement(
+        Elements.TileElementMatcher,
+        enabled = animateTilesExpansion() && !QsLiteMode.isEnabled(),
+    )
     sharedElement(Elements.BrightnessSlider)
 
     // This will animate between 0f (QQS) and 0.5, fading in the QQS tiles when coming back
