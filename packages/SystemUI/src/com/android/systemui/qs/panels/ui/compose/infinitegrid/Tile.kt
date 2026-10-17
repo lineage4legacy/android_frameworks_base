@@ -20,6 +20,7 @@ package com.android.systemui.qs.panels.ui.compose.infinitegrid
 
 import android.content.Context
 import android.content.res.Resources
+import android.os.SystemProperties
 import android.os.Trace
 import android.service.quicksettings.Tile.STATE_ACTIVE
 import android.service.quicksettings.Tile.STATE_INACTIVE
@@ -127,6 +128,10 @@ fun TileLazyGrid(
         content = content,
     )
 }
+
+// Read once so the rendering implementation cannot change during a transition.
+private val useDirectTileDrawing =
+    SystemProperties.getInt("persist.sys.qs.direct.draw", 0) == 1
 
 private val TileViewModel.traceName
     get() = spec.toString().takeLast(Trace.MAX_SECTION_NAME_LEN)
@@ -358,7 +363,8 @@ private fun TileExpandable(
     Expandable(
         controller = rememberExpandableController(color = color, shape = shape),
         modifier = modifier.clip(shape).verticalSquish(squishiness),
-        useModifierBasedImplementation = true,
+        // The existing overlay implementation draws directly until a launch transition starts.
+        useModifierBasedImplementation = !useDirectTileDrawing,
     ) {
         content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
     }
