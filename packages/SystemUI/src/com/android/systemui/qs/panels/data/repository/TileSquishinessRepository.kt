@@ -17,6 +17,7 @@
 package com.android.systemui.qs.panels.data.repository
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.qs.shared.QsLiteMode
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +28,7 @@ class TileSquishinessRepository @Inject constructor() {
     val squishiness = _squishiness.asStateFlow()
 
     fun setSquishinessValue(value: Float) {
-        _squishiness.value = value
+        // Avoid publishing changing tile geometry when lite mode keeps tiles at full height.
+        _squishiness.value = if (QsLiteMode.isEnabled()) 1f else value
     }
 }
